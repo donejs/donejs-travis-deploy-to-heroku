@@ -11,7 +11,7 @@
   "main": "lib/",
   "scripts": {
     "test": "npm run jshint && npm run mocha",
-    "jshint": "jshint test/. default/index.js --config",
+    "jshint": "jshint . --config",
     "mocha": "mocha test/ --timeout 120000",
     "publish": "git push origin --tags && git push origin",
     "release:patch": "npm version patch && npm publish",
@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "js-yaml": "^3.10.0",
     "lodash": "^4.17.4",
     "yeoman-generator": "^1.1.1"
   },

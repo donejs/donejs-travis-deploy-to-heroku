@@ -1,18 +1,90 @@
+var fs = require('fs');
 var path = require('path');
 var helpers = require('yeoman-test');
 var assert = require('yeoman-assert');
 
 describe('donejs-travis-to-heroku', function() {
-  before(function(done) {
-    helpers.run(path.join(__dirname, '../default'))
-      .inTmpDir()
-      .withPrompts({
-        name: 'testing'
-      }).on('end', done);
+  describe('without .travis.yml', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir()
+        .on('end', done);
+    });
+
+    it('does not write travis.yml', function() {
+      assert.noFile('.travis.yml');
+    });
   });
 
-  it('should write testing.js file', function() {
-    assert.file(['testing.js']);
-    assert.fileContent('testing.js', /This is a file from the donejs-travis-to-heroku DoneJS generator/);
+  describe('with .travis.yml but no Procfile', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not write travis.yml', function() {
+      assert.noFileContent('.travis.yml', /deploy:/);
+    });
+  });
+
+  describe('with Procfile but travis.yml has deploy settings', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_deploy_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+          fs.copyFileSync(
+            path.join(__dirname, 'procfile_fixture'),
+            path.join(dir, 'Procfile')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not override travis.yml deploy settings', function() {
+      assert.fileContent('.travis.yml', /app: my-awesome-app/);
+    });
+  });
+
+  describe('with Procfile and travis.yml without deploy settings', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .withPrompts({ name: 'place-my-order-1234' })
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+
+          fs.copyFileSync(
+            path.join(__dirname, 'procfile_fixture'),
+            path.join(dir, 'Procfile')
+          );
+        })
+        .on('ready', function(generator) {
+          // stub helper that reads the most recently created heroku app name
+          generator._getMostRecentHerokuAppName = function() {
+            return Promise.resolve('');
+          };
+        })
+        .on('end', done);
+    });
+
+    it('writes deploy settings with app name from prompt', function() {
+      assert.fileContent('.travis.yml', /deploy:/);
+      assert.fileContent('.travis.yml', /app: place-my-order-1234/);
+    });
   });
 });
