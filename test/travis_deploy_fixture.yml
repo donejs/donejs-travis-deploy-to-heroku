@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.2
+  - jruby
+  - 2.0.0-p247
+deploy:
+  skip_cleanup: true
+  provider: heroku
+  app: my-awesome-app
+
