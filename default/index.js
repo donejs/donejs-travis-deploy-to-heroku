@@ -13,6 +13,13 @@ module.exports = Generator.extend({
       skip_cleanup: true, // jshint ignore:line
       provider: 'heroku'
     };
+    this.beforeDeploySteps = [
+      'git config --global user.email "me@example.com"',
+      'git config --global user.name "deploy bot"',
+      'node build',
+      'git add dist/ --force',
+      'git commit -m "Updating build."'
+    ];
   },
 
   initializing: function initializing() {
@@ -33,6 +40,14 @@ module.exports = Generator.extend({
       this.log.error(
         'There are deploy settings in your .travis.yml already. ' +
           'Please delete the "deploy" section before running this command.'
+      );
+      return;
+    }
+    if (this.travisYml.before_deploy) { //jshint ignore:line
+      this.abort = true;
+      this.log.error(
+        'There are before_deploy steps in your .travis.yml already. ' +
+          'Please delete the "before_deploy" section before running this command.'
       );
       return;
     }
@@ -77,6 +92,7 @@ module.exports = Generator.extend({
       this.log('Adding deploy settings to ' + this.travisConfigPath);
       this.travisYml.deploy = this.deploySettings;
       this.travisYml.deploy.app = this.props.name;
+      this.travisYml.before_deploy = this.beforeDeploySteps; //jshint ignore:line
 
       this.fs.write(this.travisConfigPath, yaml.safeDump(this.travisYml));
     }
