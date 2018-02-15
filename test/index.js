@@ -57,7 +57,29 @@ describe('donejs-travis-to-heroku', function() {
     });
   });
 
-  describe('with Procfile and travis.yml without deploy settings', function() {
+  describe('with Procfile but travis.yml has before_deploy steps', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_before_deploy_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+          fs.copyFileSync(
+            path.join(__dirname, 'procfile_fixture'),
+            path.join(dir, 'Procfile')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not override travis.yml before_deploy steps', function() {
+      assert.fileContent('.travis.yml', /echo 'ready\?'/);
+    });
+  });
+
+  describe('with Procfile and travis.yml without deployment stuff', function() {
     before(function(done) {
       helpers
         .run(path.join(__dirname, '../default'))
@@ -85,6 +107,12 @@ describe('donejs-travis-to-heroku', function() {
     it('writes deploy settings with app name from prompt', function() {
       assert.fileContent('.travis.yml', /deploy:/);
       assert.fileContent('.travis.yml', /app: place-my-order-1234/);
+    });
+
+    it('writes before_deploy steps', function() {
+      assert.fileContent('.travis.yml', /before_deploy:/);
+      assert.fileContent('.travis.yml', /node build/);
+      assert.fileContent('.travis.yml', /git add dist\/ --force/);
     });
   });
 });
