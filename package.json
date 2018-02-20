@@ -1,5 +1,5 @@
 {
-  "name": "donejs-travis-to-heroku",
+  "name": "donejs-travis-deploy-to-heroku",
   "version": "0.0.2",
   "description": "",
   "homepage": "",

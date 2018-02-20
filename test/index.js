@@ -3,7 +3,7 @@ var path = require('path');
 var helpers = require('yeoman-test');
 var assert = require('yeoman-assert');
 
-describe('donejs-travis-to-heroku', function() {
+describe('donejs-travis-deploy-to-heroku', function() {
   describe('without .travis.yml', function() {
     before(function(done) {
       helpers
