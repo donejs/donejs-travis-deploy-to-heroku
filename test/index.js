@@ -83,7 +83,12 @@ describe('donejs-travis-to-heroku', function() {
     before(function(done) {
       helpers
         .run(path.join(__dirname, '../default'))
-        .withPrompts({ name: 'place-my-order-1234' })
+        .withPrompts({
+          githubUsername: 'foo',
+          githubAppName: 'my-app',
+          herokuAppName: 'place-my-order-1234',
+          herokuAuthToken: '**************'
+        })
         .inTmpDir(function(dir) {
           fs.copyFileSync(
             path.join(__dirname, 'travis_fixture.yml'),
@@ -100,8 +105,18 @@ describe('donejs-travis-to-heroku', function() {
           generator._getMostRecentHerokuAppName = function() {
             return Promise.resolve('');
           };
+          generator._getPromptDefaults = function() {
+            return Promise.resolve({ parsedRepo: {} });
+          };
+          generator._encryptHerokuToken = function() {
+            return Promise.resolve('ENCRYPTED_TOKEN');
+          };
         })
         .on('end', done);
+    });
+
+    it('writes encryped heroku token', function() {
+      assert.fileContent('.travis.yml', /api_key: ENCRYPTED_TOKEN/);
     });
 
     it('writes deploy settings with app name from prompt', function() {
