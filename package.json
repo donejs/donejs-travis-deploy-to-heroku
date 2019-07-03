@@ -27,7 +27,7 @@
     "js-yaml": "^3.10.0",
     "lodash": "^4.17.4",
     "parse-github-url": "^1.0.2",
-    "travis-encrypt": "^2.1.1",
+    "donejs-travis-encrypt": "^3.0.0",
     "yeoman-generator": "^1.1.1"
   },
   "devDependencies": {
